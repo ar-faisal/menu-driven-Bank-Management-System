@@ -15,7 +15,7 @@ class PASSBOOK
    float balance;
 
    public:
-   void getdata()
+   void enter()
     { cout<<"\nAcc number:";
       cin>>acno;
       cout<<"Name:";
@@ -28,17 +28,14 @@ class PASSBOOK
       gets(aadhar_no);
       cout<<"Account type(current or saving):";
       gets(accounttype);
-      do
-	 { cout<<"Your ACCOUNT MUST HAVE MINIMUM BALANCE OF RS 500\n";
-	   cout<<"Balance:";
-	   cin>>balance;
-	 } while(balance<500);
+      cout<<"Balance:";
+      cin>>balance;
       cout<<"Date of account registry(d/m/yy):";
       cin>>idate>>imonth>>iyear;
 
     }
 
-   void putdata()
+   void show()
     { cout<<"\n\t\t\tNATIONAL ABC BANK"<<endl;
       cout<<"\t\t\tKamla Nagar, Delhi-110007"<<endl;
       cout<<"\n\tDate of last transaction:"<<setw(21)<<idate<<"/"<<imonth<<"/"<<iyear;
@@ -62,39 +59,26 @@ class PASSBOOK
 
  };
 
-void input()
+void Register()
  { clrscr();
-   PASSBOOK bank,bank1;
-   fstream fin,fout;
-   fin.open("ACCOUNT.dat",ios::in|ios::binary);
-   fout.open("temp.dat",ios::out|ios::binary);
+   int n;
+   PASSBOOK bank[10];
 
-   fin.read((char*)&bank,sizeof(bank));
-   cout<<"Enter details of account whose record is to be inserted\n";
-   bank1.getdata();
-   while(!fin.eof())
-	{ if(bank.racno()<=bank1.racno())
-	    { fout.write((char*)&bank,sizeof(bank));
-	      fin.read((char*)&bank,sizeof(bank));
-	    }
-	  else
-	    { fout.write((char*)&bank1,sizeof(bank1));
-	      fout.write((char*)&bank,sizeof(bank));
-	      break;
-	    }
-	}
+   do
+     { cout<<"no of account holders<=10:";cin>>n;
+     } while(n>10);
+   fstream fout;
+   cout<<endl<<"WARNING:Your ACCOUNT MUST HAVE MINIMUM BALANCE OF RS 500"<<endl;
+   fout.open("ACCOUNT.dat",ios::binary|ios::out);
 
-   if(!fin.eof())
-     { while(fin.read((char*)&bank,sizeof(bank)))
-	    { fout.write((char*)&bank,sizeof(bank));
-	    }
-     }
-   else fout.write((char*)&bank1,sizeof(bank1));
-   fin.close();
+   for(int i=0;i<n;i++)
+      { do
+	  { cout<<"Enter details of acc "<<i+1<<":"<<endl;bank[i].enter();
+	  } while(bank[i].rbalance()<500);
+	fout.write((char*)&bank[i],sizeof(bank[i]));
+      }
+   cout<<endl<<"    "<<n<<"ACCOUNT WERE REGISTERED...\n";
    fout.close();
-   remove("ACCOUNT.dat");
-   rename("temp.dat","ACCOUNT.dat");
-   cout<<"Your account has been successfully registered\n";
  }
 
 void display()
@@ -107,7 +91,7 @@ void display()
    cin>>no;
    while(fin.read((char*)&a,sizeof(a)))
 	{ if(a.racno()==no)
-	    { a.putdata();
+	    { a.show();
 	      found++;
 	    }
 	}
@@ -124,7 +108,7 @@ void displayAll()
    fstream fin;
    fin.open("ACCOUNT.dat",ios::in|ios::binary);
    while(fin.read((char*)&a,sizeof(a)))
-	{ a.putdata();
+	{ a.show();
 	  cout<<endl;
 	}
    fin.close();
@@ -244,9 +228,9 @@ void modify()
    while(fio.read((char*)&a,sizeof(a)))
 	{
 	  if(a.racno()==accno)
-	    { a.putdata();
+	    { a.show();
 	      cout<<"\nEnter the details of new account";
-	      a.getdata();
+	      a.enter();
 	      int pos=-1*sizeof(a);
 	      fio.seekp(pos,ios::cur);
 	      fio.write((char*)&a,sizeof(a));
@@ -278,7 +262,7 @@ void main()
 	cin>>ch;
 	ch=toupper(ch);
 	switch(ch)
-	      { case 'A':input();
+	      { case 'A':Register();
 		break;
 		case 'B':transact();
 		break;
